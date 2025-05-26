@@ -1,102 +1,74 @@
-import Image from "next/image";
+// src/app/page.tsx
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+
+const mockTrends = [
+  "AI 논쟁",
+  "웹3.0",
+  "우크라 전황",
+  "NFT 붕괴",
+  "오픈AI 개편",
+  "네카라쿠배퇴사",
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="h-screen flex flex-col bg-gradient-to-br from-zinc-900 via-purple-900 to-zinc-900 text-white overflow-hidden">
+      {/* 헤더 */}
+      <header className="flex justify-between items-center px-6 py-2 h-20 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 z-20">
+        <img
+          src="/trendchat-logo.png"
+          alt="Trend Chat Logo"
+          className="h-full max-h-16 animate-glow-slow drop-shadow-[0_0_12px_rgba(59,130,246,0.95)]"
+        />
+        <Button
+          onClick={() => router.push("/chat")}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
+          채팅 참여
+        </Button>
+      </header>
+
+      {/* 히어로 섹션 */}
+      <main className="flex-1 flex flex-col items-center justify-center px-10 py-12 relative z-10">
+        {/* 배경 이펙트 */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500 blur-[160px] opacity-20 animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-500 blur-[200px] opacity-20 animate-ping" />
+
+        <h2
+          className="text-5xl font-extrabold tracking-wide text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] animate-pulse"
+          style={{ animationDuration: "2s" }}
+        >
+          🔥 Trend Chat
+        </h2>
+        <p className="mt-2 text-2xl font-semibold text-white animate-fade-in delay-150">
+          실시간 트렌드 채팅
+        </p>
+
+        {/* 트렌드 키워드 목록 */}
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl animate-fade-in delay-500">
+          {mockTrends.map((trend, index) => (
+            <div
+              key={index}
+              className="bg-zinc-800/60 hover:bg-zinc-700 transition rounded-xl p-4 cursor-pointer border border-zinc-700 shadow-md backdrop-blur-md"
+              onClick={() => router.push(`/chat/${encodeURIComponent(trend)}`)}
+            >
+              <div className="text-white font-semibold text-lg">#{trend}</div>
+              <div className="text-sm text-zinc-400 mt-1">
+                지금 참여해보세요
+              </div>
+            </div>
+          ))}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* 푸터 */}
+      <footer className="text-center py-4 text-zinc-500 text-sm border-t border-zinc-700 bg-zinc-900/40 backdrop-blur-md z-20">
+        © 2025 Trend Chat. All rights reserved.
       </footer>
     </div>
   );
