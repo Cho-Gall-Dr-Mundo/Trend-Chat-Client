@@ -1,5 +1,5 @@
-// src/app/chat/page.tsx
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
