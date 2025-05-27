@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface HeaderProps {
   onChatClick: () => void;
@@ -16,9 +16,12 @@ const Header: React.FC<HeaderProps> = ({ onChatClick }) => {
         className="h-32 transition-all duration-300 hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
       />
       <div className="absolute right-6">
-        <Button onClick={onChatClick} className="bg-purple-600 hover:bg-purple-700">
-          채팅 참여
-        </Button>
+        <Link href="/signup" className="btn">
+          회원가입
+        </Link>
+        <Link href="/login" className="btn ml-2">
+          로그인
+        </Link>
       </div>
     </header>
   );
