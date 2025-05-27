@@ -1,36 +1,63 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import zxcvbn from "zxcvbn";
 
 export default function SignupForm() {
-  const router = useRouter();
-  const [form, setForm] = useState({
-    email: "",
-    nickname: "",
-    password: "",
-  });
+  const { signup } = useAuth();
+  const [form, setForm] = useState({ email: "", nickname: "", password: "" });
+  const [passwordStrength, setPasswordStrength] = useState(zxcvbn(""));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "password") {
+      setPasswordStrength(zxcvbn(value));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user-service/api/v1/auth/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+    if (passwordStrength.score < 2) {
+      alert("비밀번호가 너무 약합니다. 더 복잡하게 설정해주세요.");
+      return;
+    }
 
-    if (res.ok) {
-      router.push("/login");
-    } else {
-      const error = await res.json();
-      alert(`회원가입 실패: ${error.message}`);
+    await signup(form.email, form.nickname, form.password);
+  };
+
+  const getStrengthLabel = (score: number) => {
+    switch (score) {
+      case 0:
+      case 1:
+        return "❌ 매우 약함";
+      case 2:
+        return "⚠️ 약함";
+      case 3:
+        return "✅ 보통";
+      case 4:
+        return "💪 강함";
+      default:
+        return "";
+    }
+  };
+
+  const getStrengthColor = (score: number) => {
+    switch (score) {
+      case 0:
+      case 1:
+        return "text-red-500";
+      case 2:
+        return "text-yellow-500";
+      case 3:
+        return "text-green-400";
+      case 4:
+        return "text-green-500";
+      default:
+        return "";
     }
   };
 
@@ -86,6 +113,9 @@ export default function SignupForm() {
             className="mt-1 w-full px-4 py-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
             required
           />
+          <p className={`mt-1 text-sm ${getStrengthColor(passwordStrength.score)}`}>
+            {getStrengthLabel(passwordStrength.score)}
+          </p>
         </div>
 
         <button
