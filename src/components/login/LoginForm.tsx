@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
-  const router = useRouter();
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const { login } = useAuth();
+  const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,22 +13,7 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user-service/api/v1/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // 리프레시 토큰을 쿠키로 받기 위해 필요
-      body: JSON.stringify(form),
-    });
-
-    if (res.ok) {
-      router.push("/"); // 로그인 후 메인으로 이동
-    } else {
-      const error = await res.json();
-      alert(`로그인 실패: ${error.message}`);
-    }
+    await login(form.email, form.password);
   };
 
   return (
