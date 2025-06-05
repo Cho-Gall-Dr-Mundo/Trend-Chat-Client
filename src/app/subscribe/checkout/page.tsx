@@ -1,79 +1,69 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { requestPayment } from '@/lib/payment-api';
-import { useUser } from '@/hooks/use-user';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { userId } = useUser();
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    if (!userId) {
-      router.push('/login');
-    }
-  }, [userId]);
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cardholder, setCardholder] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      await requestPayment(userId, 9900);
-      setMessage('✅ 결제가 완료되었습니다!');
-      setTimeout(() => router.push('/'), 2000); // 홈으로 이동
-    } catch {
-      setMessage('❌ 결제에 실패했습니다.');
-    } finally {
-      setLoading(false);
+  const handlePayment = () => {
+    if (!cardNumber || !expiry || !cardholder) {
+      setError("모든 정보를 입력해주세요.");
+      return;
     }
+
+    // TODO: 실제 결제 연동 로직 추가 예정
+    alert("결제가 완료되었습니다!");
+    router.push("/me");
   };
 
   return (
-      <main className="min-h-screen flex items-center justify-center bg-zinc-900 p-4">
-        <Card className="bg-zinc-800 shadow-md rounded-2xl p-4 w-full max-w-md text-center space-y-4">
-          <CardHeader>
-            <CardTitle className="text-purple-400 text-xl font-bold">결제 정보 입력</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      <section className="bg-zinc-950 min-h-screen py-20 px-4 flex flex-col items-center justify-center">
+        <div className="bg-zinc-900 p-8 rounded-2xl shadow-md max-w-md w-full border border-zinc-700">
+          <h2 className="text-2xl font-bold text-white text-center mb-6">결제 정보 입력</h2>
+
+          <div className="space-y-4">
             <input
                 type="text"
-                placeholder="카드 번호"
+                placeholder="카드번호 (16자리)"
                 value={cardNumber}
                 onChange={(e) => setCardNumber(e.target.value)}
-                className="w-full p-2 rounded bg-zinc-700 text-white"
+                maxLength={16}
+                className="w-full p-2 rounded bg-zinc-800 text-white placeholder-zinc-400"
             />
+
             <input
                 type="text"
                 placeholder="유효기간 (MM/YY)"
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
-                className="w-full p-2 rounded bg-zinc-700 text-white"
+                className="w-full p-2 rounded bg-zinc-800 text-white placeholder-zinc-400"
             />
+
             <input
                 type="text"
                 placeholder="카드 소유자 이름"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 rounded bg-zinc-700 text-white"
+                value={cardholder}
+                onChange={(e) => setCardholder(e.target.value)}
+                className="w-full p-2 rounded bg-zinc-800 text-white placeholder-zinc-400"
             />
+
+            {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+
             <Button
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl hover:scale-105 transition-all"
-                onClick={handleSubmit}
-                disabled={loading}
+                onClick={handlePayment}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-xl transition-all"
             >
-              {loading ? '결제 중...' : '결제하기'}
+              결제하기
             </Button>
-            {message && <p className="text-sm text-purple-300 mt-2">{message}</p>}
-          </CardContent>
-        </Card>
-      </main>
+          </div>
+        </div>
+      </section>
   );
 }

@@ -3,9 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   return (
     <header className="relative flex items-center justify-between h-20 px-6 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 z-20">
@@ -38,24 +40,39 @@ const Header: React.FC = () => {
       {/* 우측 로그인/로그아웃 */}
       <div className="flex items-center space-x-3">
         {user ? (
-          <>
-            <span className="text-white text-sm">{user.nickname}</span>
-            <button
-              onClick={logout}
-              className="bg-zinc-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded"
-            >
-              로그아웃
-            </button>
-          </>
+            <>
+              <span className="text-white text-sm">{user.nickname}</span>
+
+              <button
+                  onClick={() => router.push("/subscribe/checkout")}
+                  className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded"
+              >
+                프리미엄 구독
+              </button>
+
+              <button
+                  onClick={logout}
+                  className="bg-zinc-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded"
+              >
+                로그아웃
+              </button>
+            </>
         ) : (
-          <>
-            <Link href="/signup" className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded">
-              회원가입
-            </Link>
-            <Link href="/login" className="bg-zinc-700 hover:bg-zinc-800 text-white py-1 px-3 rounded">
-              로그인
-            </Link>
-          </>
+            <>
+              <button
+                  onClick={() => router.push("/subscribe")}
+                  className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded"
+              >
+                프리미엄 구독
+              </button>
+
+              <Link href="/signup" className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded">
+                회원가입
+              </Link>
+              <Link href="/login" className="bg-zinc-700 hover:bg-zinc-800 text-white py-1 px-3 rounded">
+                로그인
+              </Link>
+            </>
         )}
       </div>
     </header>
