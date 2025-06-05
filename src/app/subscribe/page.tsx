@@ -1,37 +1,50 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser } from '@/hooks/use-user';
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useUser } from "@/hooks/use-user"; // ✅ 유저 확인 훅 사용
 
 export default function SubscribePage() {
   const router = useRouter();
-  const { userId } = useUser();
-
-  useEffect(() => {
-    if (!userId) {
-      router.push('/login');
-    }
-  }, [userId]);
+  const { userId } = useUser(); // ✅ userId를 통해 로그인 여부 판단
 
   return (
-      <main className="min-h-screen flex items-center justify-center bg-zinc-900 p-4">
-        <Card className="bg-zinc-800 shadow-md rounded-2xl p-4 w-full max-w-md text-center space-y-4">
-          <CardHeader>
-            <CardTitle className="text-purple-400 text-xl font-bold">프리미엄 구독</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-zinc-200 mb-4">월 <strong className="text-purple-400">9,900원</strong>으로 모든 기능을 무제한 이용해보세요.</p>
+      <section className="bg-zinc-950 min-h-screen py-16 px-4 text-center">
+        <h1 className="text-3xl font-bold text-white mb-8">Trend Chat 구독 플랜</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* FREE 플랜 */}
+          <div className="bg-zinc-800 p-6 rounded-2xl shadow-md border border-zinc-700">
+            <h2 className="text-xl font-semibold text-white mb-4">무료 플랜</h2>
+            <ul className="text-zinc-300 text-sm text-left mb-6 space-y-2">
+              <li>✅ 트렌드 채널 열람 가능</li>
+              <li>⚠️ 채팅방 최대 5개까지 참여 가능</li>
+            </ul>
+            <p className="text-white font-semibold">₩0 / 월</p>
+          </div>
+
+          {/* PREMIUM 플랜 */}
+          <div className="bg-purple-900 p-6 rounded-2xl shadow-lg border border-purple-500">
+            <h2 className="text-xl font-semibold text-white mb-4">프리미엄 플랜</h2>
+            <ul className="text-purple-200 text-sm text-left mb-6 space-y-2">
+              <li>✅ 채팅방 무제한 참여</li>
+              <li>🚀 향후 프리미엄 기능 우선 제공</li>
+            </ul>
+            <p className="text-white font-bold text-lg mb-4">₩9,900 / 월</p>
             <Button
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl hover:scale-105 transition-all"
-                onClick={() => router.push('/subscribe/checkout')}
+                onClick={() => {
+                  if (userId) {
+                    router.push("/subscribe/checkout");
+                  } else {
+                    router.push("/login");
+                  }
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white w-full py-2 rounded-xl transition-all"
             >
               프리미엄 구독하기
             </Button>
-          </CardContent>
-        </Card>
-      </main>
+          </div>
+        </div>
+      </section>
   );
 }
