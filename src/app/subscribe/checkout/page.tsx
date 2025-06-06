@@ -1,68 +1,50 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function CheckoutPage() {
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cardholder, setCardholder] = useState("");
-  const [error, setError] = useState("");
-
-  const handlePayment = () => {
-    if (!cardNumber || !expiry || !cardholder) {
-      setError("모든 정보를 입력해주세요.");
-      return;
+  const handleKakaoPay = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/payments/kakaopay/ready", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemName: "Trend Chat 프리미엄", quantity: 1, totalAmount: 3900 }),
+      });
+      const redirectUrl = await res.text();
+      if (redirectUrl.startsWith("http")) {
+        window.location.href = redirectUrl;
+      } else {
+        alert("결제 요청에 실패했습니다.");
+        setLoading(false);
+      }
+    } catch {
+      alert("결제 중 오류가 발생했습니다.");
+      setLoading(false);
     }
-
-    // TODO: 실제 결제 연동 로직 추가 예정
-    alert("결제가 완료되었습니다!");
-    router.push("/me");
   };
 
   return (
-      <section className="bg-zinc-950 min-h-screen py-20 px-4 flex flex-col items-center justify-center">
+      <section className="bg-zinc-950 min-h-screen py-20 px-4 flex flex-col items-center justify-center text-center">
         <div className="bg-zinc-900 p-8 rounded-2xl shadow-md max-w-md w-full border border-zinc-700">
-          <h2 className="text-2xl font-bold text-white text-center mb-6">결제 정보 입력</h2>
-
-          <div className="space-y-4">
-            <input
-                type="text"
-                placeholder="카드번호 (16자리)"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                maxLength={16}
-                className="w-full p-2 rounded bg-zinc-800 text-white placeholder-zinc-400"
-            />
-
-            <input
-                type="text"
-                placeholder="유효기간 (MM/YY)"
-                value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
-                className="w-full p-2 rounded bg-zinc-800 text-white placeholder-zinc-400"
-            />
-
-            <input
-                type="text"
-                placeholder="카드 소유자 이름"
-                value={cardholder}
-                onChange={(e) => setCardholder(e.target.value)}
-                className="w-full p-2 rounded bg-zinc-800 text-white placeholder-zinc-400"
-            />
-
-            {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-
-            <Button
-                onClick={handlePayment}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-xl transition-all"
-            >
-              결제하기
-            </Button>
-          </div>
+          <h2 className="text-2xl font-bold text-white mb-4">프리미엄 구독 안내</h2>
+          <p className="text-white mb-6 text-sm">
+            현재는 프리미엄 구독 기능을 준비 중입니다.<br />
+            아래 버튼을 통해 카카오페이 결제를 체험할 수 있습니다.
+          </p>
+          <Button
+              disabled={loading}
+              onClick={handleKakaoPay}
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-xl transition-all"
+          >
+            {loading ? "결제 페이지로 이동 중..." : "카카오페이로 결제하기"}
+          </Button>
+          <p className="text-zinc-400 text-sm mt-4">
+            결제는 실제로 이루어지지 않으며, 시뮬레이션입니다.
+          </p>
         </div>
       </section>
   );

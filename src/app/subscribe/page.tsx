@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/hooks/use-user"; // ✅ 유저 확인 훅 사용
+import { useUser } from "@/hooks/use-user";
 
 export default function SubscribePage() {
   const router = useRouter();
-  const { userId } = useUser(); // ✅ userId를 통해 로그인 여부 판단
+  const { userId } = useUser();
 
   return (
       <section className="bg-zinc-950 min-h-screen py-16 px-4 text-center">
