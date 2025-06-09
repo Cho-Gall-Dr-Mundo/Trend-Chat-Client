@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
@@ -38,26 +44,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-  try {
-    const res = await api.post("/user-service/api/v1/auth/login", {
-      email,
-      password,
-    });
+    try {
+      const res = await api.post("/user-service/api/v1/auth/login", {
+        email,
+        password,
+      });
 
-    const token = res.headers["authorization"] || res.data?.accessToken;
-    if (token) {
-      const raw = token.startsWith("Bearer ") ? token.substring(7) : token;
-      localStorage.setItem("access_token", raw);
+      const token = res.headers["authorization"] || res.data?.accessToken;
+      if (token) {
+        const raw = token.startsWith("Bearer ") ? token.substring(7) : token;
+        localStorage.setItem("access_token", raw);
+      }
+
+      // ✅ 유저 이메일도 저장 (채팅 전송용 sender용도)
+      localStorage.setItem("user_email", email);
+
+      await fetchUser();
+      router.push("/");
+    } catch (err: any) {
+      const message = err.response?.data?.message || "로그인 실패";
+      alert(message);
     }
-
-    await fetchUser();
-    router.push("/");
-  } catch (err: any) {
-    const message = err.response?.data?.message || "로그인 실패";
-    alert(message);
-  }
-};
-
+  };
 
   const signup = async (email: string, nickname: string, password: string) => {
     try {
