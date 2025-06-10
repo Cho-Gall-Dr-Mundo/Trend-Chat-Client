@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import HomeLayout from "@/components/home/HomeLayout";
+import TrendingKeywords from "@/components/home/TrendingKeywords";
 import Hero from "@/components/home/HeroSection";
 import TrendList from "@/components/home/TrendList";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -13,9 +14,14 @@ export default function HomePage() {
 
   return (
     <HomeLayout onChatClick={() => router.push("/chat")}>
+      <TrendingKeywords />
       <Hero />
       <HowItWorks />
-      <TrendList onTrendClick={(trend) => router.push(`/chat/${encodeURIComponent(trend)}`)} />
+      <TrendList
+        onTrendClick={(trend) =>
+          router.push(`/chat/${encodeURIComponent(trend)}`)
+        }
+      />
       <TrendNewsSecotion />
       <ClosingSection />
     </HomeLayout>
