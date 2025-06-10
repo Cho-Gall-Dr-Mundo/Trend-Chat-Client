@@ -15,14 +15,17 @@ const Header: React.FC = () => {
           <img
             src="/trendchat-logo.png"
             alt="Trend Chat Logo"
-            className="h-20 w-auto transition-all duration-300 hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
+            className="h-14 w-auto transition-all duration-300 hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
           />
         </Link>
       </div>
 
       {/* 중앙 메뉴 */}
       <nav className="flex items-center space-x-6 text-sm font-medium">
-        <Link href="/keywords" className="hover:text-purple-400 transition-colors">
+        <Link
+          href="/keywords"
+          className="hover:text-purple-400 transition-colors"
+        >
           트렌드 키워드
         </Link>
         <Link href="/news" className="hover:text-purple-400 transition-colors">
@@ -49,10 +52,16 @@ const Header: React.FC = () => {
           </>
         ) : (
           <>
-            <Link href="/signup" className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded">
+            <Link
+              href="/signup"
+              className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded"
+            >
               회원가입
             </Link>
-            <Link href="/login" className="bg-zinc-700 hover:bg-zinc-800 text-white py-1 px-3 rounded">
+            <Link
+              href="/login"
+              className="bg-zinc-700 hover:bg-zinc-800 text-white py-1 px-3 rounded"
+            >
               로그인
             </Link>
           </>
