@@ -82,7 +82,7 @@ export default function ChatLayout({ participants }: ChatLayoutProps) {
                   >
                     {!isMine && (
                       <div className="w-8 h-8 bg-purple-400 rounded-full flex items-center justify-center text-xs font-bold">
-                        {msg.sender.charAt(0)}
+                        {msg.senderNickname?.charAt(0)}
                       </div>
                     )}
                     <div
@@ -93,7 +93,7 @@ export default function ChatLayout({ participants }: ChatLayoutProps) {
                       }`}
                     >
                       <span className="text-xs font-semibold text-purple-200 block mb-1">
-                        {msg.sender} · {format(msg.timestamp, "HH:mm")}
+                        {msg.senderNickname} · {format(msg.timestamp, "HH:mm")}
                       </span>
                       <div>{msg.content}</div>
                     </div>

@@ -36,7 +36,7 @@ export default function ChatSearch({ messages = [] }: ChatSearchProps) {
             filtered.map((msg) => (
               <div key={msg.id} className="p-2 rounded bg-zinc-700/40 mb-1">
                 <div className="text-purple-300 text-xs font-semibold">
-                  {msg.sender} · {format(msg.timestamp, "HH:mm")}
+                  {msg.senderNickname} · {format(msg.timestamp, "HH:mm")}
                 </div>
                 <div>{msg.content}</div>
               </div>
