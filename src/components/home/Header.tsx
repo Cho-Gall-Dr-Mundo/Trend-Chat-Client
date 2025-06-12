@@ -3,19 +3,22 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import NotificationBell from "@/components/notification/NotificationBell";
 
 const Header: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+
+  if (isLoading) return null; // 또는 로딩 스피너 표시
 
   return (
-    <header className="relative flex items-center justify-between h-20 px-6 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 z-20">
+    <header className="relative flex items-center justify-between h-20 px-6 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 overflow-visible z-20">
       {/* 로고 */}
       <div className="flex items-center space-x-4">
         <Link href="/">
           <img
             src="/trendchat-logo.png"
             alt="Trend Chat Logo"
-            className="h-14 w-auto transition-all duration-300 hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
+            className="h-12 w-auto transition-all duration-300 hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
           />
         </Link>
       </div>
@@ -38,8 +41,9 @@ const Header: React.FC = () => {
         )}
       </nav>
 
-      {/* 우측 로그인/로그아웃 */}
+      {/* 우측 알림 + 로그인/로그아웃 */}
       <div className="flex items-center space-x-3">
+        {user && <NotificationBell />}
         {user ? (
           <>
             <span className="text-white text-sm">{user.nickname}</span>

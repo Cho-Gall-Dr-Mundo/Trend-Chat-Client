@@ -18,6 +18,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signup: (email: string, nickname: string, password: string) => Promise<void>;
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // 추가됨
 
   useEffect(() => {
     fetchUser(); // 앱 시작 시 로그인된 유저 불러오기
@@ -42,6 +44,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("✅ user fetched", user);
     } catch {
       setUser(null);
+    } finally {
+      setIsLoading(false); // 무조건 로딩 종료
     }
   };
 
@@ -58,9 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("access_token", raw);
       }
 
-      // ✅ 유저 이메일도 저장 (채팅 전송용 sender용도)
-      localStorage.setItem("user_email", email);
-
+      localStorage.setItem("user_email", email); // 채팅 전송용 sender 저장
       await fetchUser();
       router.push("/");
     } catch (err: any) {
@@ -90,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, signup }}>
       {children}
     </AuthContext.Provider>
   );
