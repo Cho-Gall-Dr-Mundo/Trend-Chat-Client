@@ -13,9 +13,10 @@
     "date-fns": "^4.1.0",
     "event-source-polyfill": "^1.0.31",
     "framer-motion": "^12.12.2",
+    "lucide-react": "^0.514.0",
     "next": "15.3.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.1.0",
     "tailwind-scrollbar-hide": "^2.0.0",
     "zxcvbn": "^4.4.2"
   },
