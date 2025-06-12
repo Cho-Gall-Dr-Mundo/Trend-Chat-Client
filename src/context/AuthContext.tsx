@@ -37,7 +37,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await api.get("/user-service/api/v1/users/me");
       console.log("✅ user fetched", res.data);
-      setUser(res.data);
+      const { email, name, userId } = res.data;
+      setUser({ email, nickname: name, userId });
+      console.log("✅ user fetched", user);
     } catch {
       setUser(null);
     }
