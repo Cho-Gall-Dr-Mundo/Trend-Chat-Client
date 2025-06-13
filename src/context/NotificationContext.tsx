@@ -23,6 +23,7 @@ export type NotificationContextType = {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (id: string) => void;
+  deleteAllNotifications: () => void;
   latestToastMessage: string | null;
 };
 
@@ -47,24 +48,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const timeoutMap = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   useEffect(() => {
-    const saved = localStorage.getItem("notifications-read");
-    if (!saved) return;
-
-    const parsed: Record<string, boolean> = JSON.parse(saved);
-    setNotifications((prev) =>
-      prev.map((n) => ({
-        ...n,
-        read: parsed[n.id] ?? n.read,
-      }))
-    );
+    const saved = localStorage.getItem("notifications");
+    if (saved) {
+      const parsed = JSON.parse(saved) as Notification[];
+      setNotifications(parsed);
+    }
   }, []);
 
   useEffect(() => {
-    const readMap = notifications.reduce((acc, n) => {
-      acc[n.id] = n.read;
-      return acc;
-    }, {} as Record<string, boolean>);
-    localStorage.setItem("notifications-read", JSON.stringify(readMap));
+    localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
   const addNotification = (message: string, duration = 5000) => {
@@ -91,35 +83,23 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) => {
-      const target = prev.find((n) => n.id === id);
-      if (!target) return prev;
-
-      // 타이머 클리어
-      const timeout = timeoutMap.current.get(id);
-      if (timeout) {
-        clearTimeout(timeout);
-        timeoutMap.current.delete(id);
-      }
-
-      // 리스트에서 삭제
-      return prev.filter((n) => n.id !== id);
-    });
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
   };
 
   const markAllAsRead = () => {
-    notifications.forEach((n) => {
-      const timeout = timeoutMap.current.get(n.id);
-      if (timeout) clearTimeout(timeout);
-      timeoutMap.current.delete(n.id);
-    });
-
-    setNotifications([]);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const deleteNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     timeoutMap.current.delete(id);
+  };
+
+  const deleteAllNotifications = () => {
+    setNotifications([]);
+    timeoutMap.current.clear();
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -133,6 +113,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         markAsRead,
         markAllAsRead,
         deleteNotification,
+        deleteAllNotifications,
         latestToastMessage,
       }}
     >
