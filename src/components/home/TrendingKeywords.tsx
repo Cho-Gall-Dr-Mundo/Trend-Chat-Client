@@ -1,21 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-
-const dummyTrends = [
-  { rank: 1, keyword: "이강인" },
-  { rank: 2, keyword: "트렌드 챗" },
-  { rank: 3, keyword: "쿠팡플레이" },
-  { rank: 4, keyword: "BTS" },
-  { rank: 5, keyword: "파이널 테스트" },
-  { rank: 6, keyword: "카카오페이" },
-  { rank: 7, keyword: "한강 실종" },
-  { rank: 8, keyword: "애플 개발자 회의" },
-  { rank: 9, keyword: "갤럭시 Z 플립6" },
-  { rank: 10, keyword: "이재용" },
-];
+import { useTrending } from "@/context/TrendingContext";
 
 const TrendingKeywords: React.FC = () => {
+  const { top10, isLoading } = useTrending();
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
   const [showList, setShowList] = useState(false);
@@ -25,12 +14,12 @@ const TrendingKeywords: React.FC = () => {
     const interval = setInterval(() => {
       setFade(false);
       setTimeout(() => {
-        setIndex((prev) => (prev + 1) % dummyTrends.length);
+        setIndex((prev) => (prev + 1) % top10.length);
         setFade(true);
       }, 300);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [top10]);
 
   useEffect(() => {
     const el = listRef.current;
@@ -52,7 +41,9 @@ const TrendingKeywords: React.FC = () => {
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
-  const current = dummyTrends[index];
+  if (isLoading || top10.length === 0) return null;
+
+  const current = top10[index];
 
   return (
     <div className="w-full flex justify-center px-4 py-6 bg-gradient-to-b from-zinc-900/70 to-zinc-800/50 border-b border-zinc-700 backdrop-blur-md z-20">
@@ -76,7 +67,7 @@ const TrendingKeywords: React.FC = () => {
               ${fade ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}
               drop-shadow-[0_0_5px_rgba(168,85,247,0.6)]`}
           >
-            {current.rank}. {current.keyword}
+            {index + 1}. {current.keyword}
           </span>
         </div>
 
@@ -96,12 +87,12 @@ const TrendingKeywords: React.FC = () => {
                         space-y-2 text-sm text-white border border-purple-700/40 shadow-[0_4px_12px_rgba(128,0,255,0.25)] backdrop-blur-sm
                         ring-1 ring-purple-500/30 transition-all duration-300 custom-scrollbar"
           >
-            {dummyTrends.map((item) => (
+            {top10.map((item, i) => (
               <li
-                key={item.rank}
+                key={item.keyword}
                 className="hover:bg-zinc-700/60 px-3 py-1 rounded cursor-default transition-colors"
               >
-                {item.rank}. {item.keyword}
+                {i + 1}. {item.keyword}
               </li>
             ))}
           </ul>
