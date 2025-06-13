@@ -33,13 +33,12 @@ export const ChatProvider = ({
 }) => {
   const { user } = useAuth();
 
-  // ✅ nickname이 없으면 렌더 중단
   if (!user || !user.nickname) {
     console.warn("⛔ 유저 정보 없음 (nickname 누락) → ChatProvider 렌더 중단");
     return null;
   }
 
-  const nickname = user.nickname;
+  const nickname = user.nickname.trim().toLowerCase();
   const [roomId, setRoomId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -47,6 +46,8 @@ export const ChatProvider = ({
 
   // 1️⃣ 채팅방 및 과거 메시지 로드
   useEffect(() => {
+    if (!nickname) return;
+
     const init = async () => {
       try {
         const { data: room } = await api.get(
@@ -58,14 +59,28 @@ export const ChatProvider = ({
           `/chat-service/api/v1/chat/history/${room.id}`
         );
 
-        const converted = historyRes.data.map((msg: any) => ({
-          id: msg.id,
-          roomId: msg.roomId,
-          senderNickname: msg.senderNickname,
-          content: msg.content,
-          timestamp: new Date(msg.timestamp),
-          isMine: msg.senderNickname === nickname,
-        }));
+        console.log("📦 전체 history 응답:", historyRes.data);
+
+        const converted = historyRes.data.map((msg: any) => {
+          const isMine = msg.senderNickname?.trim().toLowerCase() === nickname;
+
+          console.log("🕘 [HISTORY]", {
+            raw: msg,
+            senderNickname: msg.senderNickname,
+            myNickname: nickname,
+            isMine,
+          });
+
+          return {
+            id: msg.id,
+            roomId: msg.roomId,
+            senderNickname: msg.senderNickname, // ✅ 명시적으로 포함
+            senderEmail: msg.senderEmail, // 혹시 프론트에서 표시 필요하면
+            content: msg.content,
+            timestamp: new Date(msg.timestamp),
+            isMine,
+          };
+        });
 
         setMessages(converted);
       } catch (err) {
@@ -78,7 +93,7 @@ export const ChatProvider = ({
 
   // 2️⃣ SSE 실시간 수신
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId || !nickname) return;
 
     const token = localStorage.getItem("access_token");
     if (!token) return;
@@ -98,17 +113,26 @@ export const ChatProvider = ({
     es.onmessage = (event: MessageEvent) => {
       const msg: Message = JSON.parse(event.data);
 
-      console.log("📥 SSE 메시지 수신됨", msg);
-      console.log("roomId 상태값:", roomId);
-      console.log("SSE 수신 roomId:", msg.roomId);
-      console.log("📩 senderNickname:", msg.senderNickname);
-      console.log("👤 내 nickname:", nickname);
-      console.log("✅ isMine 결과:", msg.senderNickname === nickname);
+      // ✅ ping 무시
+      if (msg.content === "ping") return;
+
+      const isMine = msg.senderNickname?.trim().toLowerCase() === nickname;
+
+      console.log("📥 [SSE]", {
+        raw: msg,
+        senderNickname: msg.senderNickname,
+        myNickname: nickname,
+        isMine,
+      });
 
       const enrichedMsg: Message = {
-        ...msg,
+        id: msg.id,
+        roomId: msg.roomId,
+        senderNickname: msg.senderNickname, // ✅ 명시
+        senderEmail: msg.senderEmail,
+        content: msg.content,
         timestamp: new Date(msg.timestamp),
-        isMine: msg.senderNickname === nickname,
+        isMine,
       };
 
       if (String(msg.roomId) === String(roomId)) {
@@ -131,7 +155,7 @@ export const ChatProvider = ({
 
     const payload = {
       roomId: Number(roomId),
-      senderNickname: nickname,
+      senderNickname: user.nickname, // 그대로 보냄
       content: input,
     };
 
