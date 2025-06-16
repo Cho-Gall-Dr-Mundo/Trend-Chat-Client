@@ -18,7 +18,7 @@ export default function CheckoutPage() {
     // ✅ 결제 승인 처리
     if (pgToken && tid && user?.userId) {
       setLoading(true);
-      fetch("/api/payments/kakaopay/approve", {
+      fetch("http://localhost:8080/payment-service/api/v1/payments/kakaopay/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
 
   const handleKakaoPay = async () => {
     setLoading(true);
-    const res = await fetch("/api/payments/kakaopay/ready", {
+    const res = await fetch("http://localhost:8080/payment-service/api/v1/payments/kakaopay/ready", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -52,6 +52,8 @@ export default function CheckoutPage() {
     });
 
     const json = await res.json();
+    console.log("✅ 카카오페이 ready 응답:", json);
+
     if (json?.nextRedirectPcUrl && json?.tid) {
       sessionStorage.setItem("kakao_tid", json.tid);
       window.location.href = json.nextRedirectPcUrl;
