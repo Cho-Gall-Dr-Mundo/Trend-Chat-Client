@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/hooks/use-user";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SubscribePage() {
   const router = useRouter();
-  const { userId } = useUser();
+  const { user } = useAuth();
 
   return (
       <section className="bg-zinc-950 min-h-screen py-16 px-4 text-center">
@@ -33,7 +33,7 @@ export default function SubscribePage() {
             <p className="text-white font-bold text-lg mb-4">₩9,900 / 월</p>
             <Button
                 onClick={() => {
-                  if (userId) {
+                  if (user?.userId) {
                     router.push("/subscribe/checkout");
                   } else {
                     router.push("/login");

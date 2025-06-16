@@ -12,7 +12,7 @@ export default function KakaoPayCancelPage() {
     const tid = sessionStorage.getItem("kakao_tid");
 
     if (user?.userId && tid) {
-      fetch("/api/payments/kakaopay/cancel", {
+      fetch("http://localhost:8080/payment-service/api/v1/payments/kakaopay/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
