@@ -11,7 +11,7 @@ const Header: React.FC = () => {
   if (isLoading) return null; // 또는 로딩 스피너 표시
 
   return (
-    <header className="relative flex items-center justify-between h-20 px-6 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 overflow-visible z-20">
+    <header className="relative flex items-center justify-between h-20 px-6 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 z-20">
       {/* 로고 */}
       <div className="flex items-center space-x-4">
         <Link href="/">
@@ -38,6 +38,11 @@ const Header: React.FC = () => {
           <Link href="/me" className="hover:text-purple-400 transition-colors">
             마이페이지
           </Link>
+        )}
+        {user && (
+            <Link href="/subscribe" className="hover:text-purple-400 transition-colors">
+              구독하기
+            </Link>
         )}
       </nav>
 
