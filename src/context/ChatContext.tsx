@@ -13,10 +13,17 @@ import api from "@/lib/api";
 import { Message } from "@/types/chat";
 import { useAuth } from "@/context/AuthContext";
 
+interface Participant {
+  id: string;
+  nickname: string;
+}
+
 interface ChatContextType {
   roomId: string;
   title: string;
   messages: Message[];
+  participants: string[];
+  nicknameMap: Record<string, string>;
   input: string;
   setInput: (input: string) => void;
   sendMessage: () => Promise<void>;
@@ -32,21 +39,23 @@ export const ChatProvider = ({
   children: ReactNode;
 }) => {
   const { user } = useAuth();
+  const nickname = user?.nickname?.trim().toLowerCase() || "";
 
-  if (!user || !user.nickname) {
-    console.warn("⛔ 유저 정보 없음 (nickname 누락) → ChatProvider 렌더 중단");
-    return null;
-  }
+  const eventSource = useRef<EventSource | null>(null);
+  const joinOnce = useRef(false);
 
-  const nickname = user.nickname.trim().toLowerCase();
   const [roomId, setRoomId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [participants, setParticipants] = useState<string[]>([]);
+  const [nicknameMap, setNicknameMap] = useState<Record<string, string>>({});
   const [input, setInput] = useState("");
-  const eventSource = useRef<EventSource | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  // 1️⃣ 채팅방 및 과거 메시지 로드
   useEffect(() => {
-    if (!nickname) return;
+    if (!nickname || joinOnce.current) return;
+
+    // ✅ 여기서 바로 true로 박아야 함
+    joinOnce.current = true; // ⛳️ 반드시 먼저 설정 (중복 방지 핵심)
 
     const init = async () => {
       try {
@@ -55,43 +64,66 @@ export const ChatProvider = ({
         );
         setRoomId(String(room.id));
 
+        await new Promise((r) => setTimeout(r, 100));
+        await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
+
+        const membersRes = await api.get(
+          `/chat-service/api/v1/rooms/${room.id}/members`
+        );
+        const members: Participant[] = membersRes.data;
+        setParticipants(members.map((m) => m.nickname));
+        setNicknameMap(
+          Object.fromEntries(members.map((m) => [m.id, m.nickname]))
+        );
+
         const historyRes = await api.get(
           `/chat-service/api/v1/chat/history/${room.id}`
         );
-
-        console.log("📦 전체 history 응답:", historyRes.data);
-
-        const converted = historyRes.data.map((msg: any) => {
-          const isMine = msg.senderNickname?.trim().toLowerCase() === nickname;
-
-          console.log("🕘 [HISTORY]", {
-            raw: msg,
-            senderNickname: msg.senderNickname,
-            myNickname: nickname,
-            isMine,
-          });
-
-          return {
-            id: msg.id,
-            roomId: msg.roomId,
-            senderNickname: msg.senderNickname, // ✅ 명시적으로 포함
-            senderEmail: msg.senderEmail, // 혹시 프론트에서 표시 필요하면
-            content: msg.content,
-            timestamp: new Date(msg.timestamp),
-            isMine,
-          };
-        });
-
+        const converted = historyRes.data.map((msg: any) => ({
+          id: msg.id,
+          roomId: msg.roomId,
+          senderNickname: msg.senderNickname,
+          senderEmail: msg.senderEmail,
+          content: msg.content,
+          timestamp: new Date(msg.timestamp),
+          isMine: msg.senderNickname?.trim().toLowerCase() === nickname,
+        }));
         setMessages(converted);
-      } catch (err) {
-        console.error("❌ 채팅 초기화 실패:", err);
+
+        setIsInitializing(false);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          try {
+            const { data: room } = await api.post(
+              `/chat-service/api/v1/rooms/title/${encodeURIComponent(title)}`
+            );
+            setRoomId(String(room.id));
+
+            await new Promise((r) => setTimeout(r, 100));
+            await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
+
+            const membersRes = await api.get(
+              `/chat-service/api/v1/rooms/${room.id}/members`
+            );
+            const members: Participant[] = membersRes.data;
+            setParticipants(members.map((m) => m.nickname));
+            setNicknameMap(
+              Object.fromEntries(members.map((m) => [m.id, m.nickname]))
+            );
+
+            setIsInitializing(false);
+          } catch (createErr) {
+            console.error("❌ 채팅방 생성 실패:", createErr);
+          }
+        } else {
+          console.error("❌ 채팅방 조회 실패:", err);
+        }
       }
     };
 
     init();
   }, [title, nickname]);
 
-  // 2️⃣ SSE 실시간 수신
   useEffect(() => {
     if (!roomId || !nickname) return;
 
@@ -109,26 +141,15 @@ export const ChatProvider = ({
     );
 
     es.onopen = () => console.log("✅ SSE 연결됨");
-
     es.onmessage = (event: MessageEvent) => {
       const msg: Message = JSON.parse(event.data);
-
-      // ✅ ping 무시
       if (msg.content === "ping") return;
 
       const isMine = msg.senderNickname?.trim().toLowerCase() === nickname;
-
-      console.log("📥 [SSE]", {
-        raw: msg,
-        senderNickname: msg.senderNickname,
-        myNickname: nickname,
-        isMine,
-      });
-
-      const enrichedMsg: Message = {
+      const enriched: Message = {
         id: msg.id,
         roomId: msg.roomId,
-        senderNickname: msg.senderNickname, // ✅ 명시
+        senderNickname: msg.senderNickname,
         senderEmail: msg.senderEmail,
         content: msg.content,
         timestamp: new Date(msg.timestamp),
@@ -136,12 +157,12 @@ export const ChatProvider = ({
       };
 
       if (String(msg.roomId) === String(roomId)) {
-        setMessages((prev) => [...prev, enrichedMsg]);
+        setMessages((prev) => [...prev, enriched]);
       }
     };
 
-    es.onerror = (err: Event) => {
-      console.error("❌ SSE 연결 오류:", err);
+    es.onerror = (err: unknown) => {
+      console.error("❌ SSE 오류:", err);
       es.close();
     };
 
@@ -149,13 +170,12 @@ export const ChatProvider = ({
     return () => es.close();
   }, [roomId, nickname]);
 
-  // 3️⃣ 메시지 전송 함수
   const sendMessage = async () => {
     if (!input.trim() || !roomId) return;
 
     const payload = {
       roomId: Number(roomId),
-      senderNickname: user.nickname, // 그대로 보냄
+      senderNickname: user?.nickname,
       content: input,
     };
 
@@ -167,9 +187,27 @@ export const ChatProvider = ({
     }
   };
 
+  // ✅ 훅 실행 후에 조건부 렌더링 (정상)
+  if (!user || !user.nickname) {
+    return <div>로그인이 필요합니다.</div>;
+  }
+
+  if (isInitializing) {
+    return null;
+  }
+
   return (
     <ChatContext.Provider
-      value={{ roomId, title, messages, input, setInput, sendMessage }}
+      value={{
+        roomId,
+        title,
+        messages,
+        participants,
+        nicknameMap,
+        input,
+        setInput,
+        sendMessage,
+      }}
     >
       {children}
     </ChatContext.Provider>
