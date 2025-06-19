@@ -40,9 +40,12 @@ const Header: React.FC = () => {
           </Link>
         )}
         {user && (
-            <Link href="/subscribe" className="hover:text-purple-400 transition-colors">
-              구독하기
-            </Link>
+          <Link
+            href="/subscribe"
+            className="hover:text-purple-400 transition-colors"
+          >
+            구독하기
+          </Link>
         )}
       </nav>
 

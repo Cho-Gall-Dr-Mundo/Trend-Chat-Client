@@ -2,12 +2,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useChat } from "@/context/ChatContext";
 
-interface Props {
-  participants: string[];
-}
+export default function SidebarParticipants() {
+  const { participants } = useChat();
 
-export default function SidebarParticipants({ participants }: Props) {
   return (
     <aside className="relative w-full lg:w-1/5 border-b lg:border-b-0 lg:border-r border-zinc-700 bg-zinc-900/30 backdrop-blur-md p-4 text-sm overflow-hidden">
       {/* 오로라 배경 블러 효과 */}

@@ -11,7 +11,7 @@ export default function ChatRoomPage() {
 
   return (
     <ChatProvider title={decodedTitle}>
-      <ChatLayout participants={participantsMock} />
+      <ChatLayout />
     </ChatProvider>
   );
 }
