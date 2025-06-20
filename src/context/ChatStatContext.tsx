@@ -16,8 +16,15 @@ interface ChatRoomStat {
   messages: number;
 }
 
+interface RawRoom {
+  id: number;
+  title: string;
+  description?: string;
+}
+
 interface ChatStatContextType {
-  rooms: ChatRoomStat[];
+  rooms: ChatRoomStat[]; // 🔥 트렌드 top6
+  allRooms: RawRoom[]; // ✅ 전체 채팅방 목록
   loading: boolean;
 }
 
@@ -25,6 +32,7 @@ const ChatStatContext = createContext<ChatStatContextType | null>(null);
 
 export const ChatStatProvider = ({ children }: { children: ReactNode }) => {
   const [rooms, setRooms] = useState<ChatRoomStat[]>([]);
+  const [allRooms, setAllRooms] = useState<RawRoom[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTrends = async () => {
@@ -34,10 +42,11 @@ export const ChatStatProvider = ({ children }: { children: ReactNode }) => {
       );
       console.log("✅ top5 room ids:", topIds);
 
-      const { data: allRooms } = await api.get<{ id: number; title: string }[]>(
+      const { data: all } = await api.get<RawRoom[]>(
         "/chat-service/api/v1/rooms"
       );
-      console.log("✅ allRooms:", allRooms);
+      console.log("✅ allRooms:", all);
+      setAllRooms(all); // ✅ 전체 채팅방 저장
 
       const { data: stats } = await api.post<
         Record<number, { participants: number; messageCount: number }>
@@ -45,7 +54,7 @@ export const ChatStatProvider = ({ children }: { children: ReactNode }) => {
       console.log("✅ bulk stats:", stats);
 
       const trendRooms: ChatRoomStat[] = topIds.map((id) => {
-        const meta = allRooms.find((r) => r.id === id);
+        const meta = all.find((r) => r.id === id);
         const stat = stats[id];
         return {
           roomId: id,
@@ -70,7 +79,7 @@ export const ChatStatProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <ChatStatContext.Provider value={{ rooms, loading }}>
+    <ChatStatContext.Provider value={{ rooms, allRooms, loading }}>
       {children}
     </ChatStatContext.Provider>
   );

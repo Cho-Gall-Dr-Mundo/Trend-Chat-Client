@@ -5,7 +5,6 @@ import HomeLayout from "@/components/home/HomeLayout";
 import TrendingKeywords from "@/components/home/TrendingKeywords";
 import Hero from "@/components/home/HeroSection";
 import TrendList from "@/components/home/TrendList";
-import AllRoomList from "@/components/home/AllRoomList";
 import HowItWorks from "@/components/home/HowItWorks";
 import TrendNewsSecotion from "@/components/home/TrendNewsSecotion";
 import ClosingSection from "@/components/home/ClosingSection";
@@ -21,11 +20,6 @@ export default function HomePage() {
       <TrendList
         onTrendClick={(trend) =>
           router.push(`/chat/${encodeURIComponent(trend)}`)
-        }
-      />
-      <AllRoomList
-        onRoomClick={(title) =>
-          router.push(`/chat/${encodeURIComponent(title)}`)
         }
       />
       <TrendNewsSecotion />

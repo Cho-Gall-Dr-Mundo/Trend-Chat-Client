@@ -26,7 +26,7 @@ const Header: React.FC = () => {
       {/* 중앙 메뉴 */}
       <nav className="flex items-center space-x-6 text-sm font-medium">
         <Link
-          href="/keywords"
+          href="/trend-keyword"
           className="hover:text-purple-400 transition-colors"
         >
           트렌드 키워드
