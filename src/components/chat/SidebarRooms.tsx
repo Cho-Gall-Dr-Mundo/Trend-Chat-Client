@@ -1,20 +1,38 @@
-// src/components/chat/SidebarRooms.tsx
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "@/lib/api"; // 커스텀 axios 인스턴스
 
-const rooms = ["웹3.0", "AI 논쟁", "밈코인", "우크라 전황"];
+export interface MyRoomResponse {
+  id: number;
+  title: string;
+  memberCount: number;
+}
 
 export default function SidebarRooms() {
   const [search, setSearch] = useState("");
+  const [rooms, setRooms] = useState<MyRoomResponse[]>([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await api.get("/chat-service/api/v1/rooms/my");
+        setRooms(res.data);
+      } catch (error) {
+        console.error("❌ 채팅방 목록 불러오기 실패:", error);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
   const filteredRooms = rooms.filter((room) =>
-    room.toLowerCase().includes(search.toLowerCase())
+    room.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <aside className="relative w-full lg:w-1/5 border-t lg:border-t-0 lg:border-l border-zinc-700 bg-zinc-900/30 backdrop-blur-md p-4 text-sm overflow-hidden">
-      {/* 오로라 배경 블러 효과 */}
       <div className="absolute top-0 left-0 w-32 h-32 bg-purple-500 blur-[100px] opacity-20 z-0 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-500 blur-[100px] opacity-20 z-0 pointer-events-none" />
 
@@ -41,21 +59,21 @@ export default function SidebarRooms() {
 
           {filteredRooms.map((room, index) => (
             <motion.li
-              key={room}
+              key={room.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 1 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="flex justify-between items-center p-2 bg-zinc-800/60 rounded-lg cursor-pointer hover:bg-purple-600/50 shadow-[0_0_10px_rgba(168,85,247,0.2)] transition-transform will-change-transform"
-              onClick={() =>
-                (window.location.href = `/chat/${encodeURIComponent(room)}`)
-              }
+              onClick={() => (window.location.href = `/chat/${room.title}`)}
             >
               <div>
-                <div className="font-semibold text-white text-sm">#{room}</div>
+                <div className="font-semibold text-white text-sm">
+                  #{room.title}
+                </div>
                 <div className="text-xs text-zinc-400">
-                  {3 + index}명 참여 중
+                  {room.memberCount}명 참여 중
                 </div>
               </div>
               <span className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">
@@ -63,6 +81,7 @@ export default function SidebarRooms() {
               </span>
             </motion.li>
           ))}
+
           {filteredRooms.length === 0 && (
             <div className="text-zinc-400 text-xs text-center py-4">
               검색 결과가 없습니다.

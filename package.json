@@ -17,6 +17,7 @@
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.1.0",
+    "swr": "^2.3.3",
     "tailwind-scrollbar-hide": "^2.0.0",
     "zxcvbn": "^4.4.2"
   },
