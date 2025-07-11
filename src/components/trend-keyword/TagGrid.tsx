@@ -2,42 +2,152 @@
 
 import React from "react";
 import { useTrendRooms } from "@/context/ChatStatContext";
+import { useTrendList } from "@/context/TrendListContext";
+import { useRouter } from "next/navigation";
 
-interface TagGridProps {
-  search: string;
-}
+const TagGrid: React.FC = () => {
+  const router = useRouter();
+  const { allRooms, rooms: trendStats } = useTrendRooms();
+  const {
+    trends,
+    isLoading,
+    sort,
+    setSort,
+    page,
+    setPage,
+    totalPages,
+    selectedMajor,
+    selectedSub,
+    search,
+  } = useTrendList();
 
-const TagGrid: React.FC<TagGridProps> = ({ search }) => {
-  const { allRooms } = useTrendRooms();
+  if (isLoading)
+    return <p className="text-zinc-400 mt-6 text-center">로딩 중...</p>;
 
-  if (!search) return null; // ✅ 검색어 없으면 아예 렌더링 안 함
+  const filteredTrends = trends.filter((trend) => {
+    const matchSearch = search
+      ? trend.keyword.toLowerCase().includes(search.toLowerCase())
+      : true;
+    return matchSearch;
+  });
 
-  const filteredTags = allRooms.filter((room) =>
-    room.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (filteredTags.length === 0) {
+  if (filteredTrends.length === 0) {
     return (
       <p className="text-zinc-400 mt-6 text-center animate-fade-in">
-        '{search}'에 대한 키워드가 없습니다.
+        해당 조건에 맞는 트렌드 키워드가 없습니다.
       </p>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8 animate-fade-in">
-      {filteredTags.map((room) => (
-        <div
-          key={room.id}
-          className="bg-zinc-800/60 hover:bg-zinc-700 transition rounded-xl p-4 border border-zinc-700 shadow-md backdrop-blur-md"
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">
+          📰 {selectedSub ?? selectedMajor ?? "전체"} 트렌드 키워드
+        </h2>
+        <select
+          value={sort}
+          onChange={(e) => {
+            setSort(e.target.value);
+            setPage(1);
+          }}
+          className="ml-auto bg-zinc-700 text-white px-3 py-1 rounded text-sm border border-zinc-600"
         >
-          <div className="text-white font-semibold text-lg mb-1">
-            #{room.title}
-          </div>
-          <div className="text-sm text-zinc-400">자동 생성된 채팅방입니다.</div>
+          <option value="recent">최신순</option>
+          <option value="oldest">오래된 순</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 animate-fade-in">
+        {filteredTrends.map((trend) => {
+          const matchedRoom = allRooms.find(
+            (room) => room.title === trend.keyword
+          );
+          const stat = trendStats.find((r) => r.title === trend.keyword);
+
+          return (
+            <div
+              key={trend.keyword}
+              className="bg-zinc-800 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col gap-2 cursor-pointer"
+              onClick={() =>
+                matchedRoom &&
+                router.push(`/chat/${encodeURIComponent(matchedRoom.title)}`)
+              }
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                  <span className="text-sm text-purple-300">
+                    {trend.subCategory ?? trend.majorCategory}
+                  </span>
+                </div>
+                <span className="text-xs text-zinc-400">
+                  {matchedRoom ? "🔥 채팅방 있음" : "❌ 없음"}
+                </span>
+              </div>
+              <h3 className="text-white font-bold text-lg">#{trend.keyword}</h3>
+              <p className="text-sm text-zinc-400">
+                📝 {trend.summary || "설명 없음"}
+              </p>
+              {matchedRoom && stat && (
+                <div className="text-xs text-purple-300 mt-1">
+                  🧑 {stat.participants.toLocaleString()}명 / 💬{" "}
+                  {stat.messages.toLocaleString()}건
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && filteredTrends.length > 1 && (
+        <div className="flex justify-center mt-6 gap-1 flex-wrap">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="px-2 py-1 rounded bg-zinc-700 text-zinc-300 disabled:opacity-50"
+          >
+            ◀
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((p) => {
+              if (totalPages <= 7) return true;
+              if (p === 1 || p === totalPages) return true;
+              if (Math.abs(page - p) <= 2) return true;
+              return false;
+            })
+            .map((p, idx, arr) => {
+              const prev = arr[idx - 1];
+              const showDots = prev && p - prev > 1;
+              return (
+                <React.Fragment key={p}>
+                  {showDots && <span className="px-2">...</span>}
+                  <button
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1 rounded ${
+                      p === page
+                        ? "bg-purple-600 text-white"
+                        : "bg-zinc-700 text-zinc-300"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+
+          <button
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            disabled={page === totalPages}
+            className="px-2 py-1 rounded bg-zinc-700 text-zinc-300 disabled:opacity-50"
+          >
+            ▶
+          </button>
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 };
 

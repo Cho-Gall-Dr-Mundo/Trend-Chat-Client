@@ -28,7 +28,7 @@ export const TrendingProvider = ({ children }: { children: ReactNode }) => {
   const fetchTrends = async () => {
     try {
       const res = await api.get<TrendItem[]>(
-        "/trend-service/api/v1/trends/top10"
+        "/trend-service/api/v1/trend-keywords/top10"
       );
       setTop10(res.data);
     } catch (err) {
