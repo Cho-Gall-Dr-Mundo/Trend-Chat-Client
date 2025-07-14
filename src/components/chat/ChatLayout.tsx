@@ -12,7 +12,6 @@ import ChatSearch from "./ChatSearch";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
 import { useChat } from "@/context/ChatContext";
-import { Message } from "@/types/chat";
 
 export default function ChatLayout() {
   const { title, messages, input, setInput, sendMessage } = useChat();
@@ -20,25 +19,26 @@ export default function ChatLayout() {
   const [activeEmojiBox, setActiveEmojiBox] = useState<number | null>(null);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 50);
-    return () => clearTimeout(timeout);
-  }, [messages, activeEmojiBox]);
+    bottomRef.current?.scrollIntoView({ behavior: "auto" });
+  }, [messages]);
 
   let lastDate: Date | null = null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-900 via-purple-900 to-zinc-900 text-white">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-900 via-purple-900 to-zinc-900 text-white overflow-x-hidden">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <div className="absolute top-0 left-0 w-72 h-72 bg-purple-500 blur-[120px] opacity-30 animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500 blur-[160px] opacity-20 animate-ping" />
+      <main className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
+        {/* ✅ 블러 백그라운드 안전하게 처리 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-0 left-0 w-72 h-72 bg-purple-500 blur-[120px] opacity-30 animate-pulse" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500 blur-[160px] opacity-20 animate-ping" />
+        </div>
 
         <Card className="relative z-10 w-full max-w-6xl h-[700px] bg-zinc-800 bg-opacity-40 backdrop-blur-md flex flex-col lg:flex-row border border-zinc-700 shadow-2xl rounded-xl">
           <SidebarParticipants />
-          <div className="flex flex-col w-full lg:w-3/5">
+
+          <div className="flex flex-col w-full lg:w-[60%]">
             <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-700 bg-zinc-900/60 backdrop-blur-md text-sm font-semibold">
               <button
                 className="text-purple-300 hover:bg-purple-500/20 transition px-2 py-1 rounded"
@@ -53,17 +53,18 @@ export default function ChatLayout() {
                 <ChatSearch messages={messages} />
               </div>
             </div>
+
             <div className="px-4 py-2 text-xs text-zinc-300 bg-zinc-900/30 border-b border-zinc-700">
               ⚡️ "{title}"에 대한 최근 이슈를 기반으로 사용자들이 대화
               중입니다.
             </div>
-            <CardContent className="flex-1 overflow-y-auto space-y-6 p-4">
+
+            <CardContent className="flex-1 overflow-y-auto space-y-6 p-4 custom-scrollbar">
               {messages.map((msg) => {
                 const isMine = msg.isMine;
                 const showDate =
                   !lastDate || !isSameDay(msg.timestamp, lastDate);
                 lastDate = msg.timestamp;
-                const isActive = activeEmojiBox === msg.id;
 
                 return (
                   <motion.div
@@ -113,6 +114,7 @@ export default function ChatLayout() {
               })}
               <div ref={bottomRef} />
             </CardContent>
+
             <form
               className="flex p-4 border-t border-zinc-700"
               onSubmit={(e) => {
@@ -134,6 +136,7 @@ export default function ChatLayout() {
               </Button>
             </form>
           </div>
+
           <SidebarRooms />
         </Card>
       </main>
