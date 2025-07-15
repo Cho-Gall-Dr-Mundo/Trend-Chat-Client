@@ -13,8 +13,8 @@ import api from "@/lib/api";
 export interface Trend {
   keyword: string;
   summary: string;
-  majorCategory: string;
-  subCategory: string | null;
+  majorCategories: string[];
+  subCategories: string[];
 }
 
 interface TrendListContextType {
@@ -62,7 +62,7 @@ export const TrendListProvider = ({
             sort,
             page: page - 1,
             size: 12,
-            search, // 🔍 이 부분 추가
+            search,
           },
         });
         setTrends(res.data.content);

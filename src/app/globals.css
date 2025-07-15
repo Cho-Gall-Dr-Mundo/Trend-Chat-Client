@@ -52,3 +52,55 @@ body {
 .animate-spin-slow {
   animation: spin-slow 60s linear infinite;
 }
+
+html {
+  overflow-y: scroll;
+}
+
+.markdown-content {
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.8;
+  color: #e4e4e7;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #d4bfff;
+}
+
+.markdown-content p {
+  margin-bottom: 1.25rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-left: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.markdown-content a {
+  color: #a78bfa;
+  text-decoration: underline;
+}
+
+.markdown-content img {
+  display: block;
+  max-width: 100%;
+  margin: 2rem auto;
+  border-radius: 0.5rem;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid #a78bfa;
+  padding-left: 1rem;
+  color: #bfbfbf;
+  font-style: italic;
+  margin: 1.5rem 0;
+}
