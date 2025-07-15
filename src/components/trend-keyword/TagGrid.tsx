@@ -42,7 +42,7 @@ const TagGrid: React.FC = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-xl font-semibold text-center">
           📰 {selectedSub ?? selectedMajor ?? "전체"} 트렌드 키워드
         </h2>
         <select
@@ -77,9 +77,19 @@ const TagGrid: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                  <span className="text-sm text-purple-300">
-                    {trend.subCategory ?? trend.majorCategory}
-                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {(trend.subCategories?.length > 0
+                      ? trend.subCategories
+                      : trend.majorCategories || []
+                    ).map((cat, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 <span className="text-xs text-zinc-400">
                   {matchedRoom ? "🔥 채팅방 있음" : "❌ 없음"}

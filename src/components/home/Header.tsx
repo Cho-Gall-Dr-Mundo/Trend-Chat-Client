@@ -8,7 +8,7 @@ import NotificationBell from "@/components/notification/NotificationBell";
 const Header: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
 
-  if (isLoading) return null; // 또는 로딩 스피너 표시
+  if (isLoading) return null;
 
   return (
     <header className="relative flex items-center justify-between h-20 px-6 border-b border-zinc-700 backdrop-blur-md bg-zinc-900/50 z-20">
@@ -31,7 +31,10 @@ const Header: React.FC = () => {
         >
           트렌드 키워드
         </Link>
-        <Link href="/news" className="hover:text-purple-400 transition-colors">
+        <Link
+          href="/trend-news"
+          className="hover:text-purple-400 transition-colors"
+        >
           트렌드 뉴스
         </Link>
         {user && (
