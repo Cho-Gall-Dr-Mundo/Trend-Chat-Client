@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import api from "@/lib/api"; // 커스텀 axios 인스턴스
+import api from "@/lib/api";
+import { useSummarySSE } from "@/hooks/useSummarySSE"; // ✅ 추가
 
 export interface MyRoomResponse {
   id: number;
@@ -13,6 +14,8 @@ export interface MyRoomResponse {
 export default function SidebarRooms() {
   const [search, setSearch] = useState("");
   const [rooms, setRooms] = useState<MyRoomResponse[]>([]);
+
+  const { newRooms, clearNewRoom } = useSummarySSE(); // ✅ SSE 알림 수신용 훅
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -57,30 +60,40 @@ export default function SidebarRooms() {
             }
           `}</style>
 
-          {filteredRooms.map((room, index) => (
-            <motion.li
-              key={room.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 1 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="flex justify-between items-center p-2 bg-zinc-800/60 rounded-lg cursor-pointer hover:bg-purple-600/50 shadow-[0_0_10px_rgba(168,85,247,0.2)] transition-transform will-change-transform"
-              onClick={() => (window.location.href = `/chat/${room.title}`)}
-            >
-              <div>
-                <div className="font-semibold text-white text-sm">
-                  #{room.title}
+          {filteredRooms.map((room) => {
+            const isNew = newRooms.has(room.id); // ✅ NEW 여부 체크
+
+            return (
+              <motion.li
+                key={room.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 1 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="flex justify-between items-center p-2 bg-zinc-800/60 rounded-lg cursor-pointer hover:bg-purple-600/50 shadow-[0_0_10px_rgba(168,85,247,0.2)] transition-transform will-change-transform"
+                onClick={() => {
+                  clearNewRoom(room.id); // ✅ 클릭하면 제거
+                  window.location.href = `/chat/${room.title}`;
+                }}
+              >
+                <div>
+                  <div className="font-semibold text-white text-sm">
+                    #{room.title}
+                  </div>
+                  <div className="text-xs text-zinc-400">
+                    {room.memberCount}명 참여 중
+                  </div>
                 </div>
-                <div className="text-xs text-zinc-400">
-                  {room.memberCount}명 참여 중
-                </div>
-              </div>
-              <span className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {index + 1} new
-              </span>
-            </motion.li>
-          ))}
+
+                {isNew && (
+                  <span className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">
+                    NEW
+                  </span>
+                )}
+              </motion.li>
+            );
+          })}
 
           {filteredRooms.length === 0 && (
             <div className="text-zinc-400 text-xs text-center py-4">
