@@ -36,8 +36,8 @@ jobs:
     steps:
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/trend-chat-client-deployment \
+          kubectl set image deployment/trend-chat-client \
           trend-chat-client-container=doolchong/trend-chat-client:latest
 
       - name: Verify deployment
-        run: kubectl rollout status deployment/trend-chat-client-deployment
+        run: kubectl rollout status deployment/trend-chat-client
