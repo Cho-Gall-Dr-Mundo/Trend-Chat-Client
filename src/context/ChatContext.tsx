@@ -21,6 +21,7 @@ interface Participant {
 interface ChatContextType {
   roomId: string;
   title: string;
+  description: string;
   messages: Message[];
   participants: string[];
   nicknameMap: Record<string, string>;
@@ -45,6 +46,7 @@ export const ChatProvider = ({
   const joinOnce = useRef(false);
 
   const [roomId, setRoomId] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [participants, setParticipants] = useState<string[]>([]);
   const [nicknameMap, setNicknameMap] = useState<Record<string, string>>({});
@@ -54,8 +56,7 @@ export const ChatProvider = ({
   useEffect(() => {
     if (!nickname || joinOnce.current) return;
 
-    // ✅ 여기서 바로 true로 박아야 함
-    joinOnce.current = true; // ⛳️ 반드시 먼저 설정 (중복 방지 핵심)
+    joinOnce.current = true;
 
     const init = async () => {
       try {
@@ -63,6 +64,7 @@ export const ChatProvider = ({
           `/chat-service/api/v1/rooms/title/${encodeURIComponent(title)}`
         );
         setRoomId(String(room.id));
+        setDescription(room.description || "");
 
         await new Promise((r) => setTimeout(r, 100));
         await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
@@ -98,6 +100,7 @@ export const ChatProvider = ({
               `/chat-service/api/v1/rooms/title/${encodeURIComponent(title)}`
             );
             setRoomId(String(room.id));
+            setDescription(room.description || "");
 
             await new Promise((r) => setTimeout(r, 100));
             await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
@@ -187,7 +190,6 @@ export const ChatProvider = ({
     }
   };
 
-  // ✅ 훅 실행 후에 조건부 렌더링 (정상)
   if (!user || !user.nickname) {
     return <div>로그인이 필요합니다.</div>;
   }
@@ -201,6 +203,7 @@ export const ChatProvider = ({
       value={{
         roomId,
         title,
+        description,
         messages,
         participants,
         nicknameMap,
