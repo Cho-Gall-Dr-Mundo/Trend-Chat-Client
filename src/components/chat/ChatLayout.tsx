@@ -14,7 +14,8 @@ import Footer from "@/components/home/Footer";
 import { useChat } from "@/context/ChatContext";
 
 export default function ChatLayout() {
-  const { title, messages, input, setInput, sendMessage } = useChat();
+  const { title, description, messages, input, setInput, sendMessage } =
+    useChat();
   const bottomRef = useRef<HTMLDivElement>(null);
   const [activeEmojiBox, setActiveEmojiBox] = useState<number | null>(null);
 
@@ -54,9 +55,13 @@ export default function ChatLayout() {
               </div>
             </div>
 
-            <div className="px-4 py-2 text-xs text-zinc-300 bg-zinc-900/30 border-b border-zinc-700">
-              ⚡️ "{title}"에 대한 최근 이슈를 기반으로 사용자들이 대화
-              중입니다.
+            <div className="px-4 py-2 text-xs text-neutral-100 bg-zinc-900/60 border-b border-zinc-700">
+              <div className="group relative overflow-hidden max-h-[1.25rem] hover:max-h-[300px] transition-all duration-300 ease-in-out">
+                <p className="whitespace-pre-wrap break-words drop-shadow-sm">
+                  ⚡ {description}
+                </p>
+                <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-zinc-900/80 group-hover:opacity-0 transition-opacity duration-300" />
+              </div>
             </div>
 
             <CardContent className="flex-1 overflow-y-auto space-y-6 p-4 custom-scrollbar">

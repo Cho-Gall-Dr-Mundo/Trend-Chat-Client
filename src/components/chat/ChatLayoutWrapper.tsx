@@ -12,10 +12,10 @@ export default function ChatLayoutWrapper({ title }: { title: string }) {
   if (!user || !user.userId) return <div>로그인이 필요합니다</div>;
 
   return (
-    <SummarySSEProvider>
-      <ChatProvider title={title}>
+    <ChatProvider title={title}>
+      <SummarySSEProvider>
         <ChatLayout />
-      </ChatProvider>
-    </SummarySSEProvider>
+      </SummarySSEProvider>
+    </ChatProvider>
   );
 }
