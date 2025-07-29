@@ -2,13 +2,11 @@
 
 import React from "react";
 import { useTrendRooms } from "@/context/ChatStatContext";
+import { useRoomJoin } from "@/hooks/useRoomJoin";
 
-interface TrendListProps {
-  onTrendClick: (trend: string) => void;
-}
-
-const TrendList: React.FC<TrendListProps> = ({ onTrendClick }) => {
+const TrendList: React.FC = () => {
   const { rooms, loading } = useTrendRooms();
+  const { handleRoomClick } = useRoomJoin();
 
   if (loading) return null;
 
@@ -23,7 +21,7 @@ const TrendList: React.FC<TrendListProps> = ({ onTrendClick }) => {
             <div
               key={room.roomId}
               className="bg-zinc-800/60 hover:bg-zinc-700 transition rounded-xl p-4 cursor-pointer border border-zinc-700 shadow-md backdrop-blur-md"
-              onClick={() => onTrendClick(room.title)}
+              onClick={() => handleRoomClick(room.roomId, room.title)}
             >
               <div className="text-white font-semibold text-lg mb-1">
                 #{room.title}

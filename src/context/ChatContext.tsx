@@ -41,6 +41,8 @@ export const ChatProvider = ({
 }) => {
   const { user } = useAuth();
   const nickname = user?.nickname?.trim().toLowerCase() || "";
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
   const eventSource = useRef<EventSource | null>(null);
   const joinOnce = useRef(false);
@@ -67,7 +69,23 @@ export const ChatProvider = ({
         setDescription(room.description || "");
 
         await new Promise((r) => setTimeout(r, 100));
-        await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
+
+        try {
+          await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
+        } catch (err: any) {
+          if (err.response?.status === 403) {
+            const message = err.response?.data;
+            if (
+              typeof message === "string" &&
+              message.includes("최대 5개의 채팅방")
+            ) {
+              alert("⚠️ 무료 유저는 최대 5개의 채팅방만 구독할 수 있어요.");
+            } else {
+              alert("⚠️ 채팅방에 참가할 수 없습니다.");
+            }
+            return;
+          }
+        }
 
         const membersRes = await api.get(
           `/chat-service/api/v1/rooms/${room.id}/members`
@@ -94,33 +112,7 @@ export const ChatProvider = ({
 
         setIsInitializing(false);
       } catch (err: any) {
-        if (err.response?.status === 404) {
-          try {
-            const { data: room } = await api.post(
-              `/chat-service/api/v1/rooms/title/${encodeURIComponent(title)}`
-            );
-            setRoomId(String(room.id));
-            setDescription(room.description || "");
-
-            await new Promise((r) => setTimeout(r, 100));
-            await api.post(`/chat-service/api/v1/rooms/${room.id}/members`);
-
-            const membersRes = await api.get(
-              `/chat-service/api/v1/rooms/${room.id}/members`
-            );
-            const members: Participant[] = membersRes.data;
-            setParticipants(members.map((m) => m.nickname));
-            setNicknameMap(
-              Object.fromEntries(members.map((m) => [m.id, m.nickname]))
-            );
-
-            setIsInitializing(false);
-          } catch (createErr) {
-            console.error("❌ 채팅방 생성 실패:", createErr);
-          }
-        } else {
-          console.error("❌ 채팅방 조회 실패:", err);
-        }
+        console.error("❌ 채팅방 초기화 실패:", err);
       }
     };
 
@@ -130,7 +122,6 @@ export const ChatProvider = ({
   useEffect(() => {
     if (!roomId || !nickname) return;
 
-    const token = localStorage.getItem("access_token");
     if (!token) return;
 
     const es = new EventSourcePolyfill(

@@ -3,10 +3,9 @@
 import React from "react";
 import { useTrendRooms } from "@/context/ChatStatContext";
 import { useTrendList } from "@/context/TrendListContext";
-import { useRouter } from "next/navigation";
+import { useRoomJoin } from "@/hooks/useRoomJoin";
 
 const TagGrid: React.FC = () => {
-  const router = useRouter();
   const { allRooms, rooms: trendStats } = useTrendRooms();
   const {
     trends,
@@ -20,6 +19,7 @@ const TagGrid: React.FC = () => {
     selectedSub,
     search,
   } = useTrendList();
+  const { handleRoomClick } = useRoomJoin();
 
   if (isLoading)
     return <p className="text-zinc-400 mt-6 text-center">로딩 중...</p>;
@@ -71,7 +71,7 @@ const TagGrid: React.FC = () => {
               className="bg-zinc-800 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col gap-2 cursor-pointer"
               onClick={() =>
                 matchedRoom &&
-                router.push(`/chat/${encodeURIComponent(matchedRoom.title)}`)
+                handleRoomClick(matchedRoom.id, matchedRoom.title)
               }
             >
               <div className="flex justify-between items-center">
@@ -110,7 +110,6 @@ const TagGrid: React.FC = () => {
         })}
       </div>
 
-      {/* 페이지네이션 */}
       {totalPages > 1 && filteredTrends.length > 1 && (
         <div className="flex justify-center mt-6 gap-1 flex-wrap">
           <button
