@@ -38,7 +38,10 @@ const Header: React.FC = () => {
           트렌드 뉴스
         </Link>
         {user && (
-          <Link href="/me" className="hover:text-purple-400 transition-colors">
+          <Link
+            href="/mypage"
+            className="hover:text-purple-400 transition-colors"
+          >
             마이페이지
           </Link>
         )}
