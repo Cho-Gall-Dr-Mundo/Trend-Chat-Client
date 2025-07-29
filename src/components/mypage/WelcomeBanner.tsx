@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { Player } from "@lottiefiles/react-lottie-player";
+import dynamic from "next/dynamic";
+
+const LottiePlayer = dynamic(
+  () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
+  { ssr: false }
+);
 
 interface WelcomeBannerProps {
   nickname: string;
@@ -10,7 +15,7 @@ interface WelcomeBannerProps {
 const WelcomeBanner = ({ nickname }: WelcomeBannerProps) => {
   return (
     <div className="max-w-4xl mx-auto pt-20 text-white text-center relative">
-      <Player
+      <LottiePlayer
         autoplay
         loop
         src="/animations/welcome.json"
