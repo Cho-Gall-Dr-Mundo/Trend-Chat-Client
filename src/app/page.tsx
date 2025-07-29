@@ -17,11 +17,7 @@ export default function HomePage() {
       <TrendingKeywords />
       <Hero />
       <HowItWorks />
-      <TrendList
-        onTrendClick={(trend) =>
-          router.push(`/chat/${encodeURIComponent(trend)}`)
-        }
-      />
+      <TrendList />
       <TrendNewsSecotion />
       <ClosingSection />
     </HomeLayout>

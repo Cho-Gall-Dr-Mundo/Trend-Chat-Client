@@ -69,10 +69,11 @@ const TagGrid: React.FC = () => {
             <div
               key={trend.keyword}
               className="bg-zinc-800 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col gap-2 cursor-pointer"
-              onClick={() =>
-                matchedRoom &&
-                handleRoomClick(matchedRoom.id, matchedRoom.title)
-              }
+              onClick={async () => {
+                if (matchedRoom) {
+                  await handleRoomClick(matchedRoom.id, matchedRoom.title);
+                }
+              }}
             >
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
