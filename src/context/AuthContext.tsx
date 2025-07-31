@@ -22,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signup: (email: string, nickname: string, password: string) => Promise<void>;
+  socialLogin: (provider: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -85,14 +86,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    setUser(null);
-    router.push("/login");
+  const socialLogin = (provider: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    window.location.href = `${baseUrl}/user-service/oauth2/authorization/${provider}`;
+  };
+
+  const logout = async () => {
+    try {
+      // 1. 서버에 logout API 요청 (access token, 쿠키 자동 포함)
+      await api.post("/user-service/api/v1/users/logout");
+    } catch (e) {
+      // 에러 무시 (이미 만료 등)
+    } finally {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_email");
+      setUser(null);
+      router.push("/");
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, signup }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, logout, signup, socialLogin }}
+    >
       {children}
     </AuthContext.Provider>
   );
