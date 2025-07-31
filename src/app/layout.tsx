@@ -6,6 +6,7 @@ import { TrendingProvider } from "@/context/TrendingContext";
 import { ChatStatProvider } from "@/context/ChatStatContext";
 import SSEHandler from "@/components/common/SSEHandler";
 import NotificationToast from "@/components/common/NotificationToast";
+import { UserProvider } from "@/context/UserContext";
 
 export const metadata: Metadata = {
   title: "Trend Chat",
@@ -20,16 +21,18 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <AuthProvider>
-          <NotificationProvider>
-            <TrendingProvider>
-              <ChatStatProvider>
-                <SSEHandler />
-                <NotificationToast />
-                {children}
-                <div id="notification-root" />
-              </ChatStatProvider>
-            </TrendingProvider>
-          </NotificationProvider>
+          <UserProvider>
+            <NotificationProvider>
+              <TrendingProvider>
+                <ChatStatProvider>
+                  <SSEHandler />
+                  <NotificationToast />
+                  {children}
+                  <div id="notification-root" />
+                </ChatStatProvider>
+              </TrendingProvider>
+            </NotificationProvider>
+          </UserProvider>
         </AuthProvider>
       </body>
     </html>

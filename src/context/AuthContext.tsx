@@ -70,6 +70,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const message = err.response?.data?.message || "로그인 실패";
       alert(message);
     }
+    if (window.__refreshUser__) {
+      await window.__refreshUser__();
+    }
   };
 
   const signup = async (email: string, nickname: string, password: string) => {
