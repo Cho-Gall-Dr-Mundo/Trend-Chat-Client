@@ -36,7 +36,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setUser(res.data);
     } catch (e) {
       setUser(null);
-      // 로그아웃 등 에러 핸들링 필요시 추가
     } finally {
       setLoading(false);
     }
@@ -48,7 +47,31 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // 닉네임 수정
   const updateNickname = async (nickname: string) => {
-    await api.patch("/user-service/api/v1/users/nickname", { nickname });
+    // 닉네임 변경 API 호출
+    const res = await api.patch("/user-service/api/v1/users/nickname", {
+      nickname,
+    });
+
+    // 새 토큰은 응답 헤더(권장)나 body에 포함된다고 가정
+    const newAccessToken =
+      res.headers["authorization"] ||
+      res.headers["access-token"] ||
+      res.headers["x-access-token"] ||
+      (res.data && res.data.accessToken);
+
+    if (newAccessToken) {
+      const tokenValue =
+        typeof newAccessToken === "string" &&
+        newAccessToken.startsWith("Bearer ")
+          ? newAccessToken.substring(7)
+          : newAccessToken;
+
+      // 새 토큰 저장 + storage 브로드캐스트(모든 탭 동기화)
+      localStorage.setItem("access_token", tokenValue);
+      localStorage.setItem("access_token_updated_at", Date.now().toString());
+    }
+
+    // 닉네임도 state에 반영
     setUser((prev) => (prev ? { ...prev, nickname } : prev));
   };
 
@@ -61,6 +84,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       newPassword,
     });
   };
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "access_token" || e.key === "access_token_updated_at") {
+        // 모든 탭에서 토큰 변경 감지 시 새로고침(혹은 강제 상태 리로드)
+        window.location.reload();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   useEffect(() => {
     refreshUser();

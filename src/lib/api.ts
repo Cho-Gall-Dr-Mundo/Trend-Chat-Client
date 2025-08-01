@@ -34,15 +34,12 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // 리프레시 토큰은 쿠키에 있으므로 별도로 전송할 필요 없음
-        // withCredentials: true로 쿠키가 자동으로 전송됨
         const response = await axios.post(
-          `${BASE_URL}/api/v1/auth/refresh`,
-          {}, // 빈 객체 전송 (리프레시 토큰은 쿠키에 있음)
+          `${BASE_URL}/user-service/api/v1/auth/refresh`,
+          {},
           { withCredentials: true }
         );
 
-        // 응답 헤더에서 새 액세스 토큰 추출
         const newAccessToken =
           response.headers["authorization"] ||
           response.headers["access-token"] ||
@@ -53,27 +50,24 @@ api.interceptors.response.use(
           throw new Error("새 액세스 토큰을 찾을 수 없습니다");
         }
 
-        // Bearer 접두사 제거 (필요한 경우)
         const tokenValue =
           typeof newAccessToken === "string" &&
           newAccessToken.startsWith("Bearer ")
             ? newAccessToken.substring(7)
             : newAccessToken;
 
-        // 새 토큰 저장
+        // 새 토큰 저장 + 변경 타임스탬프 브로드캐스트!
         localStorage.setItem("access_token", tokenValue);
+        localStorage.setItem("access_token_updated_at", Date.now().toString());
 
-        // 원래 요청 헤더 업데이트
         originalRequest.headers.Authorization = `Bearer ${tokenValue}`;
-
-        // 원래 요청 재시도
         return axios(originalRequest);
       } catch (refreshError) {
-        // 리프레시 실패 시 로그아웃
+        // 리프레시 실패 시 로그아웃 + 동기화
         localStorage.removeItem("access_token");
         localStorage.removeItem("remember_me");
+        localStorage.setItem("access_token_updated_at", Date.now().toString());
 
-        // 로그인 페이지로 리디렉션
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }
