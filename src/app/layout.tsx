@@ -7,6 +7,7 @@ import { ChatStatProvider } from "@/context/ChatStatContext";
 import SSEHandler from "@/components/common/SSEHandler";
 import NotificationToast from "@/components/common/NotificationToast";
 import { UserProvider } from "@/context/UserContext";
+import { TrendNewsTop6Provider } from "@/context/TrendNewsTop6Context";
 
 export const metadata: Metadata = {
   title: "Trend Chat",
@@ -25,10 +26,13 @@ export default function RootLayout({
             <NotificationProvider>
               <TrendingProvider>
                 <ChatStatProvider>
-                  <SSEHandler />
-                  <NotificationToast />
-                  {children}
-                  <div id="notification-root" />
+                  <TrendNewsTop6Provider>
+                    {" "}
+                    <SSEHandler />
+                    <NotificationToast />
+                    {children}
+                    <div id="notification-root" />
+                  </TrendNewsTop6Provider>
                 </ChatStatProvider>
               </TrendingProvider>
             </NotificationProvider>

@@ -45,14 +45,6 @@ const Header: React.FC = () => {
             마이페이지
           </Link>
         )}
-        {user && (
-          <Link
-            href="/subscribe"
-            className="hover:text-purple-400 transition-colors"
-          >
-            구독하기
-          </Link>
-        )}
       </nav>
 
       {/* 우측 알림 + 로그인/로그아웃 */}

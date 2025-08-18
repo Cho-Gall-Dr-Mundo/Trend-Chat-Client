@@ -7,6 +7,24 @@ import HeroPreview from "@/components/home/HeroPreview";
 const Hero: React.FC = () => {
   const router = useRouter();
 
+  // 로그인 여부 판별 함수 (access_token 기준)
+  const isLoggedIn = () => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      return !!token; // 있으면 true
+    }
+    return false;
+  };
+
+  // 버튼 클릭 시 이동 로직
+  const handleButtonClick = () => {
+    if (isLoggedIn()) {
+      router.push("/trend-keyword");
+    } else {
+      router.push("/login");
+    }
+  };
+
   return (
     <section className="relative z-10 px-8 py-20 w-full bg-gradient-to-br from-zinc-900 via-purple-900 to-zinc-900">
       {/* 배경 블러 효과 */}
@@ -20,10 +38,11 @@ const Hero: React.FC = () => {
             🔥 Trend Chat
           </h1>
           <p className="mt-4 text-xl text-zinc-300 font-medium">
-            SNS에서 수집한 트렌드로<br className="hidden md:block" /> 실시간 채팅방을 자동 생성합니다.
+            SNS에서 수집한 트렌드로
+            <br className="hidden md:block" /> 실시간 채팅방을 자동 생성합니다.
           </p>
           <button
-            onClick={() => router.push("/chat")}
+            onClick={handleButtonClick}
             className="mt-6 px-6 py-3 rounded-md bg-purple-600 hover:bg-purple-700 transition text-white text-sm font-semibold"
           >
             지금 참여하기

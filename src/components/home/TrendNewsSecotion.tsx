@@ -1,123 +1,61 @@
 "use client";
 
-import React from "react";
+import { useTrendNewsTop6 } from "@/context/TrendNewsTop6Context";
 import TrendNewsCard from "@/components/home/TrendNewsCard";
-
-const trendNewsData = [
-  {
-    topic: "AI 논쟁",
-    summary: "GPT 윤리 문제와 규제 이슈로 온라인에서 뜨거운 논쟁이 벌어지고 있습니다.",
-    articles: [
-      {
-        title: "AI 규제에 대한 글로벌 합의 가능할까?",
-        source: "BBC",
-        url: "https://bbc.com/ai-regulation"
-      },
-      {
-        title: "AI 채용 시스템의 윤리적 논란 확대",
-        source: "The Verge",
-        url: "https://theverge.com/ai-ethics-hiring"
-      }
-    ]
-  },
-  {
-    topic: "웹3.0",
-    summary: "분산 웹 기술과 블록체인 ID에 대한 관심이 다시 높아지고 있습니다.",
-    articles: [
-      {
-        title: "웹3.0 시대, 탈중앙화 플랫폼이 바꿀 미래",
-        source: "Wired",
-        url: "https://wired.com/web3-future"
-      },
-      {
-        title: "블록체인 기반 개인 인증 기술 주목",
-        source: "CoinDesk",
-        url: "https://coindesk.com/blockchain-identity"
-      }
-    ]
-  },
-  {
-    topic: "우크라 전황",
-    summary: "전황 격화와 국제 정세 변화로 뉴스 보도가 이어지고 있습니다.",
-    articles: [
-      {
-        title: "우크라이나 전선, 동부 지역 격전 지속",
-        source: "Reuters",
-        url: "https://reuters.com/ukraine-war"
-      },
-      {
-        title: "나토 지원 확대, 러시아 반응은?",
-        source: "CNN",
-        url: "https://cnn.com/nato-ukraine-response"
-      }
-    ]
-  },
-  {
-    topic: "NFT 붕괴",
-    summary: "NFT 시장 거래량 급감과 프로젝트 폐쇄가 이어지고 있습니다.",
-    articles: [
-      {
-        title: "NFT 시장, 거품 끝났나?",
-        source: "The Guardian",
-        url: "https://theguardian.com/nft-collapse"
-      },
-      {
-        title: "유명 NFT 프로젝트 연쇄 도산",
-        source: "Decrypt",
-        url: "https://decrypt.co/nft-failure"
-      }
-    ]
-  },
-  {
-    topic: "오픈AI 개편",
-    summary: "GPT-5 발표 루머와 내부 인사 이동으로 주목받는 중입니다.",
-    articles: [
-      {
-        title: "GPT-5, 이르면 내달 공개될 듯",
-        source: "TechCrunch",
-        url: "https://techcrunch.com/gpt-5"
-      },
-      {
-        title: "오픈AI 내부 조직 재편 공식 발표",
-        source: "Bloomberg",
-        url: "https://bloomberg.com/openai-restructure"
-      }
-    ]
-  },
-  {
-    topic: "네카라쿠배퇴사",
-    summary: "조직문화와 연봉 격차로 인한 퇴사 러시가 커뮤니티에서 확산 중입니다.",
-    articles: [
-      {
-        title: "개발자 퇴사 트렌드, 조직의 문제인가?",
-        source: "ZDNet",
-        url: "https://zdnet.co.kr/dev-quit"
-      },
-      {
-        title: "커뮤니티 기반 퇴사 경험 공유 글 인기",
-        source: "ITWorld",
-        url: "https://itworld.com/quit-culture"
-      }
-    ]
-  }
-];
+import { extractFirstImageUrl } from "@/utils/markdown";
 
 const TrendNewsSection: React.FC = () => {
+  const { news, loading } = useTrendNewsTop6();
+
+  if (loading) {
+    return <div className="text-white text-center py-10">로딩 중...</div>;
+  }
+
+  if (!news.length) {
+    return (
+      <div className="text-white text-center py-10">
+        최신 트렌드 뉴스가 없습니다.
+      </div>
+    );
+  }
+
   return (
     <section className="mt-24 w-full flex justify-center px-4">
       <div className="w-full max-w-5xl">
-        <h3 className="text-2xl font-bold text-white mb-6 text-center">
-          📰 트렌드 키워드 관련 뉴스 요약
+        <h3 className="text-3xl font-extrabold text-white mb-4 text-center flex items-center justify-center gap-2">
+          <span>📰</span>{" "}
+          <span>검색량 급상승 키워드 기반 트렌드 뉴스 TOP 6</span>
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {trendNewsData.map((trend, index) => (
-            <TrendNewsCard
-              key={index}
-              topic={trend.topic}
-              summary={trend.summary}
-              articles={trend.articles}
-            />
-          ))}
+        <p className="text-zinc-300 text-base mb-8 text-center">
+          트렌드 챗 AI 에이전트가
+          <br />
+          최근 검색량이 급증한 키워드만 선별하여,
+          <span className="hidden md:inline">
+            <br />
+          </span>
+          관련 뉴스를 분석하고 핵심만 요약해서 전해드립니다.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {news.map((trend, idx) => {
+            const articles = [
+              {
+                title:
+                  trend.blogPost?.split("\n")[0].replace(/^#+\s*/, "") ||
+                  trend.keyword,
+                source: trend.majorCategories[0] || "",
+                url: "",
+              },
+            ];
+            return (
+              <TrendNewsCard
+                key={trend.keyword}
+                topic={trend.keyword}
+                summary={trend.summary}
+                articles={articles}
+                thumbnail={extractFirstImageUrl(trend.blogPost)}
+              />
+            );
+          })}
         </div>
       </div>
     </section>
