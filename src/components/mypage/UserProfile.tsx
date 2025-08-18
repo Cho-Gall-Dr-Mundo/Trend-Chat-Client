@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Pencil } from "lucide-react";
 import WelcomeBanner from "./WelcomeBanner";
 import { useUser } from "@/context/UserContext";
 import { format } from "date-fns";
 import PasswordChangeForm from "./PasswordChangeForm";
+import { useTotalChatRooms } from "@/hooks/useTotalChatRooms";
 
 const UserProfile = () => {
   const { user, updateNickname, loading } = useUser();
@@ -13,6 +14,28 @@ const UserProfile = () => {
   const [inputValue, setInputValue] = useState(user?.nickname ?? "");
   const [saving, setSaving] = useState(false);
   const [openPasswordChange, setOpenPasswordChange] = useState(false);
+
+  const ROOMS_BASE = `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat-service/api/v1/rooms`;
+
+  const getToken = useCallback(
+    () =>
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null,
+    []
+  );
+
+  const {
+    total: totalRooms,
+    error: roomsError,
+    settled, // 첫 응답 끝났는지
+  } = useTotalChatRooms({
+    enabled: true, // ✅ 로딩 중에도 바로 요청 시작
+    apiBase: ROOMS_BASE,
+    withCredentials: true,
+    getToken, // ✅ 메모이즈된 함수 전달(무한 재요청 방지)
+    hideUntilSettled: true, // ✅ 첫 응답 전엔 숫자 표시 안 함(깜빡임 X)
+  });
 
   // 유저 정보 불러올 때까지 대기
   if (loading) {
@@ -185,7 +208,21 @@ const UserProfile = () => {
             </div>
 
             <div className="flex items-center text-sm text-purple-300">
-              🔥 참여한 채팅방: <b className="ml-1 text-purple-200">4개</b>
+              🔥 참여한 채팅방:
+              {!settled ? (
+                <span className="ml-2 inline-block h-4 w-10 rounded bg-zinc-700/50 animate-pulse" />
+              ) : roomsError ? (
+                <>
+                  <b className="ml-1 text-red-300">-</b>
+                  <span className="ml-2 text-zinc-400">
+                    (오류: {roomsError})
+                  </span>
+                </>
+              ) : (
+                <b className="ml-1 text-purple-200">
+                  {typeof totalRooms === "number" ? totalRooms : 0}개
+                </b>
+              )}
             </div>
           </div>
         </div>
