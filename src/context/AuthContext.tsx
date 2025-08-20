@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await api.get("/user-service/api/v1/users/me");
       console.log("✅ user fetched", res.data);
       const { email, nickname, userId } = res.data;
+      localStorage.setItem("user_uuid", userId);
       setUser({ email, nickname, userId });
       console.log("✅ user fetched", user);
     } catch {
@@ -103,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       localStorage.removeItem("access_token");
       localStorage.removeItem("user_email");
+      localStorage.removeItem("user_uuid");
       setUser(null);
       router.push("/");
     }

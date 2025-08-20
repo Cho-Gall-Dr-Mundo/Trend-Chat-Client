@@ -40,9 +40,12 @@ export const ChatProvider = ({
   children: ReactNode;
 }) => {
   const { user } = useAuth();
-  const nickname = user?.nickname?.trim().toLowerCase() || "";
   const token =
     typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+
+  // ✅ 내 uuid 가져오기
+  const myUuid =
+    typeof window !== "undefined" ? localStorage.getItem("user_uuid") : null;
 
   const eventSource = useRef<EventSource | null>(null);
   const joinOnce = useRef(false);
@@ -56,7 +59,7 @@ export const ChatProvider = ({
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    if (!nickname || joinOnce.current) return;
+    if (!myUuid || joinOnce.current) return;
 
     joinOnce.current = true;
 
@@ -99,15 +102,28 @@ export const ChatProvider = ({
         const historyRes = await api.get(
           `/chat-service/api/v1/chat/history/${room.id}`
         );
-        const converted = historyRes.data.map((msg: any) => ({
-          id: msg.id,
-          roomId: msg.roomId,
-          senderNickname: msg.senderNickname,
-          senderEmail: msg.senderEmail,
-          content: msg.content,
-          timestamp: new Date(msg.timestamp),
-          isMine: msg.senderNickname?.trim().toLowerCase() === nickname,
-        }));
+
+        const converted = historyRes.data.map((msg: any) => {
+          const isMine = msg.senderId === myUuid;
+
+          console.log(
+            "📩 [HISTORY] senderUuid:",
+            msg.senderId,
+            "| myUuid:",
+            myUuid,
+            "| isMine:",
+            isMine
+          );
+          return {
+            id: msg.id,
+            roomId: msg.roomId,
+            senderUuid: msg.senderId, // ✅ 서버에서 내려줘야 함
+            senderNickname: msg.senderNickname,
+            content: msg.content,
+            timestamp: new Date(msg.timestamp),
+            isMine: msg.senderId === myUuid, // ✅ uuid로 비교
+          };
+        });
         setMessages(converted);
 
         setIsInitializing(false);
@@ -117,11 +133,10 @@ export const ChatProvider = ({
     };
 
     init();
-  }, [title, nickname]);
+  }, [title, myUuid]);
 
   useEffect(() => {
-    if (!roomId || !nickname) return;
-
+    if (!roomId || !myUuid) return;
     if (!token) return;
 
     const es = new EventSourcePolyfill(
@@ -139,10 +154,21 @@ export const ChatProvider = ({
       const msg: Message = JSON.parse(event.data);
       if (msg.content === "ping") return;
 
-      const isMine = msg.senderNickname?.trim().toLowerCase() === nickname;
+      const isMine = msg.senderId === myUuid;
+
+      console.log(
+        "📡 [RECV] senderUuid:",
+        msg.senderId,
+        "| myUuid:",
+        myUuid,
+        "| isMine:",
+        isMine
+      );
+
       const enriched: Message = {
         id: msg.id,
         roomId: msg.roomId,
+        senderId: msg.senderId,
         senderNickname: msg.senderNickname,
         senderEmail: msg.senderEmail,
         content: msg.content,
@@ -162,16 +188,24 @@ export const ChatProvider = ({
 
     eventSource.current = es;
     return () => es.close();
-  }, [roomId, nickname]);
+  }, [roomId, myUuid]);
 
   const sendMessage = async () => {
     if (!input.trim() || !roomId) return;
 
     const payload = {
       roomId: Number(roomId),
-      senderNickname: user?.nickname,
+      senderUuid: user?.userId, // ✅ uuid로 전송
+      senderNickname: user?.nickname, // 표시용
       content: input,
     };
+
+    console.log(
+      "📤 [SEND] localStorage uuid:",
+      myUuid,
+      "| payload senderUuid:",
+      payload.senderUuid
+    );
 
     try {
       await api.post("/chat-service/api/v1/chat/send", payload);

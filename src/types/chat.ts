@@ -2,6 +2,7 @@
 export interface Message {
   id: number;
   roomId: number;
+  senderId: String;
   senderNickname: string;
   senderEmail: String;
   content: string;
